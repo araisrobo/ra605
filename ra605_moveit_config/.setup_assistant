@@ -1,0 +1,8 @@
+moveit_setup_assistant_config:
+  URDF:
+    package: ra605_description
+    relative_path: urdf/ra605.urdf
+  SRDF:
+    relative_path: config/ra605_robot.srdf
+  CONFIG:
+    generated_timestamp: 1455318751
