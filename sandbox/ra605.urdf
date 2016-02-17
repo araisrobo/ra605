@@ -5,26 +5,26 @@
   <!-- the "base_link" name is mandatory for urdf_tutorial -->
   <link name="base_link">
     <visual>
-      <origin rpy="0 0 0" xyz="0 0 0.1875"/>
+      <origin rpy="0 0 0" xyz="0 0 0.1"/>
       <geometry>
-        <cylinder length="0.375" radius="0.105"/>
+        <cylinder length="0.2" radius="0.105"/>
       </geometry>
     </visual>
   </link>
   <link name="link1" />
   <link name="link2" >
     <visual>
-      <origin rpy="0 1.570796325 0" xyz="0.17 0 0"/>
+      <origin rpy="0 1.570796325 0" xyz="0.1 0 0"/>
       <geometry>
-        <cylinder length="0.34" radius="0.090"/>
+        <cylinder length="0.2" radius="0.090"/>
       </geometry>
     </visual>
   </link>
   <link name="link3" >
     <visual>
-      <origin rpy="0 1.570796325 0" xyz="0.169 0 0.04"/>
+      <origin rpy="0 1.570796325 0" xyz="0.125 0 0.04"/>
       <geometry>
-        <cylinder length="0.338" radius="0.08"/>
+        <cylinder length="0.25" radius="0.08"/>
       </geometry>
     </visual>
   </link>
@@ -87,5 +87,5 @@
     <axis xyz="1 0 0"/>
     <limit effort="0" lower="-3.1416" upper="3.1416" velocity="2.618"/>
   </joint>
-  -->
+  
 </robot>
