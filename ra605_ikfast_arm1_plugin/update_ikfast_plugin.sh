@@ -1,0 +1,1 @@
+rosrun moveit_ikfast create_ikfast_moveit_plugin.py ra605 arm1 ra605_ikfast_arm1_plugin /home/ysli/catkin_ws/src/ra605_ikfast_arm1_plugin/src/ra605_arm1_ikfast_solver.cpp
