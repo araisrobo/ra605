@@ -23,6 +23,8 @@ pushd ~/catkin_ws/src
 PLAN_GROUP=arm1
 # @moveit_ik_plugin_pkg - ${ROBOT}_ikfast_${PLAN_GROUP}_plugin
 IK_PKG=${ROBOT}_ikfast_${PLAN_GROUP}_plugin
+test -d ${ROBOT}/${IK_PKG} && /bin/rm -Rfi ${ROBOT}/${IK_PKG}
+
 if ! [ -d ${IK_PKG} ]
 then 
     catkin_create_pkg ${IK_PKG}
@@ -36,4 +38,4 @@ popd
 
 rosed ${ROBOT}_moveit_config kinematics.yaml
 
-fi # (if-Usage)
+fi # if-usage

@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 
-<robot name="ra605_robot">
+<robot name="ra605">
 
   <!-- the "base_link" name is mandatory for urdf_tutorial -->
   <link name="base_link">
@@ -87,5 +87,5 @@
     <axis xyz="1 0 0"/>
     <limit effort="0" lower="-3.1416" upper="3.1416" velocity="2.618"/>
   </joint>
-  -->
+  
 </robot>
