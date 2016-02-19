@@ -9,12 +9,12 @@ else
 # http://docs.ros.org/indigo/api/moveit_ikfast/html/doc/ikfast_tutorial.html
 
 ROBOT=$1
-#bypass: rosrun collada_urdf urdf_to_collada ${ROBOT}.urdf ${ROBOT}.dae
-#bypass: rosrun moveit_ikfast round_collada_numbers.py ${ROBOT}.dae ${ROBOT}.rounded.dae 5
-#bypass: openrave-robot.py ${ROBOT}.dae --info links
-#bypass: python `openrave-config --python-dir`/openravepy/_openravepy_/ikfast.py \
-#bypass:         --robot=${ROBOT}.dae --iktype=transform6d --baselink=0 --eelink=6 \
-#bypass:         --savefile=ikfast61_${ROBOT}.cpp
+rosrun collada_urdf urdf_to_collada ${ROBOT}.urdf ${ROBOT}.dae
+rosrun moveit_ikfast round_collada_numbers.py ${ROBOT}.dae ${ROBOT}.rounded.dae 5
+openrave-robot.py ${ROBOT}.dae --info links
+python `openrave-config --python-dir`/openravepy/_openravepy_/ikfast.py \
+        --robot=${ROBOT}.dae --iktype=transform6d --baselink=0 --eelink=6 \
+        --savefile=ikfast61_${ROBOT}.cpp
 
 IK_CPP=${PWD}/ikfast61_${ROBOT}.cpp
 
@@ -23,7 +23,7 @@ pushd ~/catkin_ws/src
 PLAN_GROUP=arm1
 # @moveit_ik_plugin_pkg - ${ROBOT}_ikfast_${PLAN_GROUP}_plugin
 IK_PKG=${ROBOT}_ikfast_${PLAN_GROUP}_plugin
-test -d ${ROBOT}/${IK_PKG} && /bin/rm -Rfi ${ROBOT}/${IK_PKG}
+test -d ${ROBOT}/${IK_PKG} && /bin/rm -Rf ${ROBOT}/${IK_PKG}
 
 if ! [ -d ${IK_PKG} ]
 then 
@@ -34,6 +34,9 @@ fi
 echo "rosrun moveit_ikfast create_ikfast_moveit_plugin.py ${ROBOT} ${PLAN_GROUP} ${ROBOT}_ikfast_${PLAN_GROUP}_plugin ${IK_CPP}"
 rosrun moveit_ikfast create_ikfast_moveit_plugin.py \
     ${ROBOT} ${PLAN_GROUP} ${ROBOT}_ikfast_${PLAN_GROUP}_plugin ${IK_CPP}
+
+# TODO: move IK_PKG to ROBOT(ra605/) directory
+# TODO: mv ${IK_PKG} ${ROBOT}/
 popd
 
 rosed ${ROBOT}_moveit_config kinematics.yaml
