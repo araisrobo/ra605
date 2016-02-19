@@ -58,8 +58,8 @@ class MoveItDemo:
         # Execute the planned trajectory
         arm1.execute(traj)
         
-        # Pause for a moment
-        rospy.sleep(1)
+#         # Pause for a moment
+#         rospy.sleep(1)
          
 #         # Set target joint values for the arm: joints are in the order they appear in
 #         # the kinematic tree.
@@ -80,8 +80,8 @@ class MoveItDemo:
          
         # Plan and execute the motion
         arm1.go()
-        rospy.sleep(1)
-                  
+#        rospy.sleep(1)
+#                  
 #        # Set the goal configuration to the named configuration saved earlier
 #        arm1.set_named_target('saved_config')
 #         
@@ -92,7 +92,7 @@ class MoveItDemo:
         # Return the arm to the named "init" pose stored in the SRDF file
         arm1.set_named_target('init')
         arm1.go()
-        rospy.sleep(1)
+#         rospy.sleep(1)
          
         # Cleanly shut down MoveIt
         moveit_commander.roscpp_shutdown()
