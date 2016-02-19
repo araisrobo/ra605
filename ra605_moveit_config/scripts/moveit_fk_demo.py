@@ -83,7 +83,7 @@ class MoveItDemo:
         
         # Set the arm target to the named "vertical" pose stored in the SRDF file
         # arm1.set_named_target('test')
-        joint_positions = [-0.0867, 1.274, 0.02832, 0.0820, -1.73, -0.003]
+        joint_positions = [-1.5867, 1.274, -1.12832, 0.7520, -1.73, -1.503]
         arm1.set_joint_value_target(joint_positions)
         # Plan and execute the motion
         arm1.go()

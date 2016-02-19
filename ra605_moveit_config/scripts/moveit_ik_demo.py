@@ -34,8 +34,8 @@ class MoveItDemo:
         # Initialize the move_group API
         moveit_commander.roscpp_initialize(sys.argv)
         
-        # sim = False; # for RPi2
-        sim = True;
+        sim = False; # for RPi2
+        # sim = True;
 
         rospy.init_node('moveit_demo')
                 
@@ -136,8 +136,8 @@ class MoveItDemo:
 #         rospy.sleep(1)
            
         # Finish up in the init position  
-#        arm1.set_named_target('init')
-#        arm1.go()
+        arm1.set_named_target('init')
+        arm1.go()
 
         # Shut down MoveIt cleanly
         moveit_commander.roscpp_shutdown()
