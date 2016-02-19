@@ -80,6 +80,14 @@ class MoveItDemo:
          
         # Plan and execute the motion
         arm1.go()
+        
+        # Set the arm target to the named "vertical" pose stored in the SRDF file
+        # arm1.set_named_target('test')
+        joint_positions = [-0.0867, 1.274, 0.02832, 0.0820, -1.73, -0.003]
+        arm1.set_joint_value_target(joint_positions)
+        # Plan and execute the motion
+        arm1.go()
+
 #        rospy.sleep(1)
 #                  
 #        # Set the goal configuration to the named configuration saved earlier
