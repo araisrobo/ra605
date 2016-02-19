@@ -3,6 +3,6 @@ moveit_setup_assistant_config:
     package: ra605_description
     relative_path: urdf/ra605.urdf
   SRDF:
-    relative_path: config/ra605_robot.srdf
+    relative_path: config/ra605.srdf
   CONFIG:
     generated_timestamp: 1455318751
