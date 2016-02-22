@@ -12,7 +12,7 @@
 /// See the License for the specific language governing permissions and
 /// limitations under the License.
 ///
-/// ikfast version 61 generated on 2016-02-19 13:13:13.682465
+/// ikfast version 61 generated on 2016-02-22 17:10:40.280640
 /// To compile with gcc:
 ///     gcc -lstdc++ ik.cpp
 /// To compile without any main function as a shared object (might need -llapack):
@@ -2498,7 +2498,7 @@ IKSolver solver;
 return solver.ComputeIk(eetrans,eerot,pfree,solutions);
 }
 
-IKFAST_API const char* GetKinematicsHash() { return "<robot:genericrobot - ra605 (25b0e0c666b434e9b53c37ff7e8200ff)>"; }
+IKFAST_API const char* GetKinematicsHash() { return "<robot:genericrobot - ra605 (0db94326aaed241424064d7896e1215a)>"; }
 
 IKFAST_API const char* GetIkFastVersion() { return IKFAST_STRINGIZE(IKFAST_VERSION); }
 

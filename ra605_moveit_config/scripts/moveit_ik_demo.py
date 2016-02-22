@@ -61,11 +61,11 @@ class MoveItDemo:
         arm1.set_goal_position_tolerance(0.01)
         arm1.set_goal_orientation_tolerance(0.05)
         
-#        # Start the arm in the "init" pose stored in the SRDF file
-#        arm1.set_named_target('init')
-#        arm1.go()
-#        if sim:
-#            rospy.sleep(2)
+        # Start the arm in the "init" pose stored in the SRDF file
+        arm1.set_named_target('init')
+        arm1.go()
+        if sim:
+            rospy.sleep(2)
                
 #         # Set the target pose.  This particular pose has the gripper oriented horizontally
 #         # 0.85 meters above the ground, 0.10 meters to the right and 0.20 meters ahead of 
@@ -88,7 +88,7 @@ class MoveItDemo:
 #        arm1.set_pose_target(target_pose, end_effector_link)
 
         # Shift the end-effector to the right 5cm
-        arm1.shift_pose_target(2, -0.05, end_effector_link)  # roll
+        arm1.shift_pose_target(0, -0.1, end_effector_link)  # roll
         
         # Plan the trajectory to the goal
         traj = arm1.plan()
@@ -100,7 +100,7 @@ class MoveItDemo:
             rospy.sleep(2)
         
         # Shift (3/Roll) the end-effector to the left 5cm
-        arm1.shift_pose_target(2, 0.05, end_effector_link)
+        arm1.shift_pose_target(0, 0.1, end_effector_link)
         
         # Plan the trajectory to the goal
         traj = arm1.plan()
@@ -111,11 +111,11 @@ class MoveItDemo:
         if sim:
             rospy.sleep(2)
         
-        # Shift the end-effector to the right 5cm
-        arm1.shift_pose_target(1, -0.05, end_effector_link)
-        arm1.go()
-        if sim:
-            rospy.sleep(2)
+        # # Shift the end-effector to the right 5cm
+        # arm1.shift_pose_target(1, -0.05, end_effector_link)
+        # arm1.go()
+        # if sim:
+        #     rospy.sleep(2)
   
 #         # Rotate the end-effector 90 degrees
 #         arm1.shift_pose_target(3, -1.57, end_effector_link)
@@ -135,9 +135,9 @@ class MoveItDemo:
 #         arm1.go()
 #         rospy.sleep(1)
            
-        # Finish up in the init position  
-        arm1.set_named_target('init')
-        arm1.go()
+#        # Finish up in the init position  
+#        arm1.set_named_target('init')
+#        arm1.go()
 
         # Shut down MoveIt cleanly
         moveit_commander.roscpp_shutdown()
