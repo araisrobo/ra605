@@ -1,13 +1,5 @@
 controller_list:
-#  - name: arm1_controller
-  - name: rrbot/position_trajectory_controller
-    action_ns: follow_joint_trajectory
+  - name: ""
+    action_ns: joint_trajectory_action
     type: FollowJointTrajectory
-    default: true
-    joints:
-      - joint1
-      - joint2
-      - joint3
-      - joint4
-      - joint5
-      - joint6
+    joints: [joint1, joint2, joint3, joint4, joint5, joint6]

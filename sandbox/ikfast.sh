@@ -12,13 +12,13 @@ ROBOT=$1
 roscp ${ROBOT}_description ${ROBOT}.urdf ./
 rosrun collada_urdf urdf_to_collada ${ROBOT}.urdf ${ROBOT}.dae
 rosrun moveit_ikfast round_collada_numbers.py ${ROBOT}.dae ${ROBOT}.rounded.dae 5
-openrave-robot.py ${ROBOT}.dae --info links
+openrave-robot.py ${ROBOT}.rounded.dae --info links
 
 # usage:
 # python `openrave-config --python-dir`/openravepy/_openravepy_/ikfast.py --help
 
 python `openrave-config --python-dir`/openravepy/_openravepy_/ikfast.py \
-        --robot=${ROBOT}.dae --iktype=transform6d --baselink=0 --eelink=6 \
+        --robot=${ROBOT}.rounded.dae --iktype=transform6d --baselink=0 --eelink=6 \
         --savefile=ikfast61_${ROBOT}.cpp
 
 IK_CPP=${PWD}/ikfast61_${ROBOT}.cpp
