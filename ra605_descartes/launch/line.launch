@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+
+  <node name="line" pkg="ra605_descartes" type="line" output="screen" />
+
+</launch>
