@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-
+  <env name="ROSCONSOLE_CONFIG_FILE" 
+       value="$(find ra605_descartes)/launch/custom_rosconsole.conf"/>
   <node name="line" pkg="ra605_descartes" type="line" output="screen" />
-
 </launch>
