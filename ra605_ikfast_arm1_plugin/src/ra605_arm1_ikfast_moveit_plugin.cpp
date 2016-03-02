@@ -254,6 +254,7 @@ private:
   double harmonize(const std::vector<double> &ik_seed_state, std::vector<double> &solution) const;
   //void getOrderedSolutions(const std::vector<double> &ik_seed_state, std::vector<std::vector<double> >& solslist);
   void getClosestSolution(const IkSolutionList<IkReal> &solutions, const std::vector<double> &ik_seed_state, std::vector<double> &solution) const;
+  int  getClosestSolution(const std::vector<double> &ik_seed_state, std::vector<double> &solution, std::vector<std::vector<double> > &solutionsVector) const;
   void fillFreeParams(int count, int *array);
   bool getCount(int &count, const int &max_count, const int &min_count) const;
 
@@ -473,13 +474,13 @@ double IKFastKinematicsPlugin::harmonize(const std::vector<double> &ik_seed_stat
     while(ss[i] > 2*M_PI) {
       ss[i] -= 2*M_PI;
     }
-    while(ss[i] < 2*M_PI) {
+    while(ss[i] < -2*M_PI) {
       ss[i] += 2*M_PI;
     }
     while(solution[i] > 2*M_PI) {
       solution[i] -= 2*M_PI;
     }
-    while(solution[i] < 2*M_PI) {
+    while(solution[i] < -2*M_PI) {
       solution[i] += 2*M_PI;
     }
     dist_sqr += fabs(ik_seed_state[i] - solution[i]);
@@ -532,6 +533,30 @@ void IKFastKinematicsPlugin::getClosestSolution(const IkSolutionList<IkReal> &so
     getSolution(solutions, minindex,solution);
     harmonize(ik_seed_state, solution);
   }
+}
+
+int  IKFastKinematicsPlugin::getClosestSolution(const std::vector<double> &ik_seed_state, std::vector<double> &solution, std::vector<std::vector<double> > &solutionsVector) const
+{
+  double mindist = DBL_MAX;
+  int minindex = -1;
+  std::vector<double> sol;
+
+  // IKFast56/61
+  for(size_t i=0; i < solutionsVector.size(); ++i)
+  {
+    double dist = harmonize(ik_seed_state, solutionsVector[i]);
+//    ROS_INFO_STREAM_NAMED("ikfast", "Dist " << i << " dist " << dist);
+    //std::cout << "dist[" << i << "]= " << dist << std::endl;
+    if(minindex == -1 || dist<mindist){
+      minindex = i;
+      mindist = dist;
+    }
+  }
+  if(minindex >= 0){
+    solution = solutionsVector[minindex];
+    harmonize(ik_seed_state, solution);
+  }
+  return minindex;
 }
 
 void IKFastKinematicsPlugin::fillFreeParams(int count, int *array)
@@ -910,6 +935,10 @@ bool IKFastKinematicsPlugin::getPositionIK(const geometry_msgs::Pose &ik_pose,
     vfree[i] = ik_seed_state[p];
   }
 
+  for(std::size_t i = 0; i < ik_seed_state.size(); ++i) {
+      ROS_DEBUG_NAMED("ikfast","ik_seed_state[%lu] is %f",i,ik_seed_state[i]);
+  }
+
   KDL::Frame frame;
   tf::poseMsgToKDL(ik_pose,frame);
 
@@ -920,32 +949,76 @@ bool IKFastKinematicsPlugin::getPositionIK(const geometry_msgs::Pose &ik_pose,
 
   if(numsol)
   {
-    for(int s = 0; s < numsol; ++s)
-    {
-      std::vector<double> sol;
-      getSolution(solutions,s,sol);
-      ROS_DEBUG_NAMED("ikfast","Sol %d: %e   %e   %e   %e   %e   %e", s, sol[0], sol[1], sol[2], sol[3], sol[4], sol[5]);
+//    for(int s = 0; s < numsol; ++s)
+//    {
+//      std::vector<double> sol;
+//      getSolution(solutions,s,sol);
+//      ROS_DEBUG_NAMED("ikfast","Sol %d: %e   %e   %e   %e   %e   %e", s, sol[0], sol[1], sol[2], sol[3], sol[4], sol[5]);
+//
+//      bool obeys_limits = true;
+//      for(unsigned int i = 0; i < sol.size(); i++)
+//      {
+//        // Add tolerance to limit check
+//        if(joint_has_limits_vector_[i] && ( (sol[i] < (joint_min_vector_[i]-LIMIT_TOLERANCE)) ||
+//                                            (sol[i] > (joint_max_vector_[i]+LIMIT_TOLERANCE)) ) )
+//        {
+//          // One element of solution is not within limits
+//          obeys_limits = false;
+//          ROS_DEBUG_STREAM_NAMED("ikfast","Not in limits! " << i << " value " << sol[i] << " has limit: " << joint_has_limits_vector_[i] << "  being  " << joint_min_vector_[i] << " to " << joint_max_vector_[i]);
+//          break;
+//        }
+//      }
+//      if(obeys_limits)
+//      {
+//        // All elements of solution obey limits
+//        getSolution(solutions,s,solution);
+//        error_code.val = moveit_msgs::MoveItErrorCodes::SUCCESS;
+//        return true;
+//      }
+//    }
 
-      bool obeys_limits = true;
-      for(unsigned int i = 0; i < sol.size(); i++)
-      {
-        // Add tolerance to limit check
-        if(joint_has_limits_vector_[i] && ( (sol[i] < (joint_min_vector_[i]-LIMIT_TOLERANCE)) ||
-                                            (sol[i] > (joint_max_vector_[i]+LIMIT_TOLERANCE)) ) )
+    // refer to https://sourceforge.net/p/usarsimros/wiki/IKFast/
+    std::vector<std::vector<double> > tempSolutions;
+    std::vector<double> sol;
+    tempSolutions.resize(numsol);
+    for(int i = 0; i < numsol; i++)
+    {
+        getSolution(solutions, i, sol);
+        tempSolutions[i] = sol;
+    }
+    while(!tempSolutions.empty()){
+        int index = getClosestSolution(ik_seed_state, sol, tempSolutions);
+        if(index != -1)
         {
-          // One element of solution is not within limits
-          obeys_limits = false;
-          ROS_DEBUG_STREAM_NAMED("ikfast","Not in limits! " << i << " value " << sol[i] << " has limit: " << joint_has_limits_vector_[i] << "  being  " << joint_min_vector_[i] << " to " << joint_max_vector_[i]);
-          break;
+            bool obeys_limits = true;
+            for(unsigned int i = 0; i < sol.size(); i++) {
+//                if(joint_has_limits_vector_[i] && (sol[i] < joint_min_vector_[i] || sol[i] > joint_max_vector_[i])) {
+//                    ROS_ERROR("jt %i has %f, out of limit (%f, %f)", i, sol[i], joint_min_vector_[i], joint_max_vector_[i]);
+//                    obeys_limits = false;
+//                    break;
+//                }
+                // Add tolerance to limit check
+                if(joint_has_limits_vector_[i] && ( (sol[i] < (joint_min_vector_[i]-LIMIT_TOLERANCE)) ||
+                        (sol[i] > (joint_max_vector_[i]+LIMIT_TOLERANCE)) ) )
+                {
+                    // One element of solution is not within limits
+                    obeys_limits = false;
+                    ROS_DEBUG_STREAM_NAMED("ikfast","Not in limits! " << i << " value " << sol[i] << " has limit: " << joint_has_limits_vector_[i] << "  being  " << joint_min_vector_[i] << " to " << joint_max_vector_[i]);
+                    break;
+                }
+            }
+            if(obeys_limits) {
+                solution = sol;
+                error_code.val = moveit_msgs::MoveItErrorCodes::SUCCESS;
+                return true;
+            } else {
+                tempSolutions.erase(tempSolutions.begin() + index);
+            }
         }
-      }
-      if(obeys_limits)
-      {
-        // All elements of solution obey limits
-        getSolution(solutions,s,solution);
-        error_code.val = moveit_msgs::MoveItErrorCodes::SUCCESS;
-        return true;
-      }
+        else
+        {
+            break;
+        }
     }
   }
   else
