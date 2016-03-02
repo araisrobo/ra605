@@ -23,6 +23,10 @@ python `openrave-config --python-dir`/openravepy/_openravepy_/ikfast.py \
 
 IK_CPP=${PWD}/ikfast61_${ROBOT}.cpp
 
+# http://sdk.rethinkrobotics.com/wiki/Custom_IKFast_for_your_Baxter
+# compile ikfastdemo.cpp with generated ikfast61_*cpp
+g++ ikfastdemo.cpp -lstdc++ -llapack -o compute -lrt
+
 pushd ~/catkin_ws/src
 # @planning_group_name - arm1
 PLAN_GROUP=arm1

@@ -401,8 +401,8 @@ void buildCircleBy3Pt(
         Eigen::Affine3d pose = descartes_core::utils::toFrame(  pt(0),              //x
                                                                 pt(1),              //y
                                                                 pt(2),              //z
-                                                                0,                  //rx
-                                                                M_PI/2,             //ry
+                                                                0,                 //rx
+                                                                M_PI,              //ry
                                                                 0);                 //rz
         descartes_core::TrajectoryPtPtr tpt = makeTolerancedCartesianPoint(pose);
         points.push_back(tpt);
@@ -463,7 +463,7 @@ int main(int argc, char** argv)
                                                          -0.5f,              //y
                                                           0.35f,             //z
                                                           0,                 //rx
-                                                          M_PI/2,            //ry
+                                                          M_PI,              //ry
                                                           0);                //rz
 //  if(createLine(config_.delta_dist, begin, end, poses))
 //  {
@@ -515,13 +515,27 @@ int main(int argc, char** argv)
   // 1. Define sequence of points
   DescartesTrajectory points;
 
+//  // for testing IK: move a verticle path
+//  for (unsigned int i = 0; i < 15; ++i)
+//  {
+//      Eigen::Affine3d pose = descartes_core::utils::toFrame(
+//              0.5f,              //x
+//              0.0f,              //y
+//              0.5f + 0.001 * i,  //z
+//              0,                 //rx
+//              M_PI,           //ry
+//              0);                //rz
+//      descartes_core::TrajectoryPtPtr pt = makeTolerancedCartesianPoint(pose);
+//      points.push_back(pt);
+//  }
+
   for (unsigned int i = 0; i < 15; ++i)
   {
     Eigen::Affine3d pose = descartes_core::utils::toFrame(  0.05f,              //x
                                                            -0.5f,               //y
                                                             0.35f + 0.001 * i,  //z
-                                                            0,                  //rx
-                                                            M_PI/2,             //ry
+                                                            0,                 //rx
+                                                            M_PI,              //ry
                                                             0);                 //rz
     descartes_core::TrajectoryPtPtr pt = makeTolerancedCartesianPoint(pose);
     points.push_back(pt);
@@ -539,7 +553,7 @@ int main(int argc, char** argv)
                                                            -0.5f,              //y
                                                             0.375f,            //z
                                                             0,                 //rx
-                                                            M_PI/2,            //ry
+                                                            M_PI,              //ry
                                                             0);                //rz
     descartes_core::TrajectoryPtPtr pt = makeTolerancedCartesianPoint(pose);
     points.push_back(pt);
@@ -556,12 +570,14 @@ int main(int argc, char** argv)
     Eigen::Affine3d pose = descartes_core::utils::toFrame(  pt3(0),             //x
                                                             pt3(1),             //y
                                                             pt3(2) - 0.001 * i, //z
-                                                            0,                  //rx
-                                                            M_PI/2,             //ry
+                                                            0,                 //rx
+                                                            M_PI,              //ry
                                                             0);                 //rz
     descartes_core::TrajectoryPtPtr pt = makeTolerancedCartesianPoint(pose);
     points.push_back(pt);
   }
+
+
 
   // 2. Create a robot model and initialize it
   descartes_core::RobotModelPtr model (new descartes_moveit::MoveitStateAdapter);
@@ -611,7 +627,8 @@ int main(int argc, char** argv)
 #if 1
   // Generate a ROS joint trajectory with the result path, robot model, given joint names,
   // a certain time delta between each trajectory point
-  trajectory_msgs::JointTrajectory joint_solution = toROSJointTrajectory(result, *model, names, 0.01); // the last param: time_delay for each point
+  trajectory_msgs::JointTrajectory joint_solution = toROSJointTrajectory(result, *model, names, 0); // the last param: time_delay for each point
+//  trajectory_msgs::JointTrajectory joint_solution = toROSJointTrajectory(result, *model, names, 0.1); // the last param: time_delay for each point
 
   // 6. Send the ROS trajectory to the robot for execution
   if (!executeTrajectory(joint_solution))

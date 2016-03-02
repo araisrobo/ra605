@@ -935,9 +935,9 @@ bool IKFastKinematicsPlugin::getPositionIK(const geometry_msgs::Pose &ik_pose,
     vfree[i] = ik_seed_state[p];
   }
 
-  for(std::size_t i = 0; i < ik_seed_state.size(); ++i) {
-      ROS_DEBUG_NAMED("ikfast","ik_seed_state[%lu] is %f",i,ik_seed_state[i]);
-  }
+  // for(std::size_t i = 0; i < ik_seed_state.size(); ++i) {
+  //     ROS_DEBUG_NAMED("ikfast","ik_seed_state[%lu] is %f",i,ik_seed_state[i]);
+  // }
 
   KDL::Frame frame;
   tf::poseMsgToKDL(ik_pose,frame);
