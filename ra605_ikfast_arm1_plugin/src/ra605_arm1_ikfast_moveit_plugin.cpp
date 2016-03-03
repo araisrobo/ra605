@@ -469,22 +469,26 @@ double IKFastKinematicsPlugin::harmonize(const std::vector<double> &ik_seed_stat
 {
   double dist_sqr = 0;
   std::vector<double> ss = ik_seed_state;
-  for(size_t i=0; i< ik_seed_state.size(); ++i)
-  {
-    while(ss[i] > 2*M_PI) {
-      ss[i] -= 2*M_PI;
-    }
-    while(ss[i] < -2*M_PI) {
-      ss[i] += 2*M_PI;
-    }
-    while(solution[i] > 2*M_PI) {
-      solution[i] -= 2*M_PI;
-    }
-    while(solution[i] < -2*M_PI) {
-      solution[i] += 2*M_PI;
-    }
-    dist_sqr += fabs(ik_seed_state[i] - solution[i]);
+
+  // forces angles into the interval (-π, π)
+  for(unsigned int i = 0; i < ik_seed_state.size(); i++) {
+      float ipartS;
+      float ipartSS;
+      std::modf(solution[i] / (2 * M_PI), &ipartS);
+      std::modf(ss[i] / (2 * M_PI), &ipartSS);
+      solution[i] -= ipartS * (2 * M_PI);
+      ss[i] -= ipartSS * (2 * M_PI);
+      if(solution[i] < -M_PI)
+          solution[i] += 2 * M_PI;
+      else if(solution[i] > M_PI)
+          solution[i] -= 2 * M_PI;
+      if(ss[i] < -M_PI)
+          ss[i] += 2 * M_PI;
+      else if(ss[i] > M_PI)
+          ss[i] -= 2 * M_PI;
+      dist_sqr += fabs(ss[i] - solution[i]);
   }
+
   return dist_sqr;
 }
 
