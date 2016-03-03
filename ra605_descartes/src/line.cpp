@@ -12,6 +12,7 @@
 #include <descartes_trajectory/cart_trajectory_pt.h>
 // Includes the planner we will be using
 #include <descartes_planner/dense_planner.h>
+#include <descartes_planner/sparse_planner.h>
 
 // Includes MoveIt
 #include <moveit_msgs/ExecuteKnownTrajectory.h>
@@ -267,15 +268,6 @@ double CalcCircleCenter(Eigen::Vector3d *pt1, Eigen::Vector3d *pt2, Eigen::Vecto
 #endif
 
 // http://stackoverflow.com/questions/13977354/build-circle-from-3-points-in-3d-space-implementation-in-c-or-c
-
-
-
-//Eigen::Vector3d pt1(0.05, -0.5, 0.365);
-//Eigen::Vector3d pt2(0.05, -0.5, 0.365);
-//Eigen::Vector3d pt3(0.06, -0.5, 0.375);
-//Eigen::Vector3d center(0.06, -0.5, 0.365);
-//buildCircleBy3Pt(&pt1, &pt2, &pt3, &center, &points);
-
 void buildCircleBy3Pt(
         const Eigen::Vector3d& p1_i,
         const Eigen::Vector3d& p2_i,
@@ -410,6 +402,83 @@ void buildCircleBy3Pt(
 }
 
 
+int plan_and_run(descartes_core::RobotModelPtr model,
+                 std::vector<std::string>& joint_names,
+                 descartes_planner::SparsePlanner& planner,
+                 DescartesTrajectory& points)
+{
+  // 4. Feed the trajectory to the planner
+  if (!planner.planPath(points))
+  {
+    ROS_ERROR("Could not solve for a valid path");
+    return -2;
+  }
+
+  DescartesTrajectory result;
+  if (!planner.getPath(result))
+  {
+    ROS_ERROR("Could not retrieve path");
+    return -3;
+  }
+
+#if 1
+  // Generate a ROS joint trajectory with the result path, robot model, given joint names,
+  // a certain time delta between each trajectory point
+  trajectory_msgs::JointTrajectory joint_solution = toROSJointTrajectory(result, *model, joint_names, 0); // the last param: time_delay for each point
+//  trajectory_msgs::JointTrajectory joint_solution = toROSJointTrajectory(result, *model, names, 0.1); // the last param: time_delay for each point
+
+  // 6. Send the ROS trajectory to the robot for execution
+  if (!executeTrajectory(joint_solution))
+  {
+    ROS_ERROR("Could not execute trajectory!");
+    return -4;
+  }
+#else
+  runPath(result, model);
+#endif
+
+  return 0;
+}
+
+
+int plan_and_run(descartes_core::RobotModelPtr model,
+                 std::vector<std::string>& joint_names,
+                 descartes_planner::DensePlanner& planner,
+                 DescartesTrajectory& points)
+{
+  // 4. Feed the trajectory to the planner
+  if (!planner.planPath(points))
+  {
+    ROS_ERROR("Could not solve for a valid path");
+    return -2;
+  }
+
+  DescartesTrajectory result;
+  if (!planner.getPath(result))
+  {
+    ROS_ERROR("Could not retrieve path");
+    return -3;
+  }
+
+#if 1
+  // Generate a ROS joint trajectory with the result path, robot model, given joint names,
+  // a certain time delta between each trajectory point
+  trajectory_msgs::JointTrajectory joint_solution = toROSJointTrajectory(result, *model, joint_names, 0); // the last param: time_delay for each point
+//  trajectory_msgs::JointTrajectory joint_solution = toROSJointTrajectory(result, *model, names, 0.1); // the last param: time_delay for each point
+
+  // 6. Send the ROS trajectory to the robot for execution
+  if (!executeTrajectory(joint_solution))
+  {
+    ROS_ERROR("Could not execute trajectory!");
+    return -4;
+  }
+#else
+  runPath(result, model);
+#endif
+
+  return 0;
+}
+
 int main(int argc, char** argv)
 {
   // Initialize ROS
@@ -478,107 +547,6 @@ int main(int argc, char** argv)
 //  // publishing trajectory poses for visualization
 //  publishPosesMarkers(poses);
 
-//  // creating descartes trajectory points
-//  DescartesTrajectory traj;
-//  traj.clear();
-//  traj.reserve(poses.size());
-//  for(unsigned int i = 0; i < poses.size(); i++)
-//  {
-//    const Eigen::Affine3d& pose = poses[i];
-//
-//    /*  Fill Code:
-//     * Goal:
-//     * - Create AxialSymetricPt objects in order to define a trajectory cartesian point with
-//     *    rotational freedom about the tool's z axis.
-//     *
-//     * Hint:
-//     * - The point can be constructed as follows:
-//     *
-//     *    new AxialSymmetricPt(Pose ,Increment, Free Axis)
-//     *
-//     * - The Pose can be found in the for loop's "pose" variable.
-//     * - The Increment can be found in the "ORIENTATION_INCREMENT" global variable.
-//     * - The Free Axis can be selected from the AxialSymmetricPt::FreeAxis::Z_AXIS enumeration constants.
-//     *
-//     */
-//    //descartes_core::TrajectoryPtPtr pt = descartes_core::TrajectoryPtPtr(/*[ COMPLETE HERE*/);
-//
-//    descartes_core::TrajectoryPtPtr pt = descartes_core::TrajectoryPtPtr(
-//        new descartes_trajectory::AxialSymmetricPt(pose,ORIENTATION_INCREMENT,
-//                                                   descartes_trajectory::AxialSymmetricPt::FreeAxis::Z_AXIS) );
-//
-//    // saving points into trajectory
-//    traj.push_back(pt);
-//  }
-
-
-  // 1. Define sequence of points
-  DescartesTrajectory points;
-
-//  // for testing IK: move a verticle path
-//  for (unsigned int i = 0; i < 15; ++i)
-//  {
-//      Eigen::Affine3d pose = descartes_core::utils::toFrame(
-//              0.5f,              //x
-//              0.0f,              //y
-//              0.5f + 0.001 * i,  //z
-//              0,                 //rx
-//              M_PI,           //ry
-//              0);                //rz
-//      descartes_core::TrajectoryPtPtr pt = makeTolerancedCartesianPoint(pose);
-//      points.push_back(pt);
-//  }
-
-  for (unsigned int i = 0; i < 15; ++i)
-  {
-    Eigen::Affine3d pose = descartes_core::utils::toFrame(  0.05f,              //x
-                                                           -0.5f,               //y
-                                                            0.35f + 0.001 * i,  //z
-                                                            0,                 //rx
-                                                            M_PI,              //ry
-                                                            0);                 //rz
-    descartes_core::TrajectoryPtPtr pt = makeTolerancedCartesianPoint(pose);
-    points.push_back(pt);
-  }
-
-  Eigen::Vector3d pt1(0.05, -0.5, 0.365);
-  Eigen::Vector3d pt2(0.052, -0.5, 0.371);
-  Eigen::Vector3d pt3(0.06, -0.5, 0.375);
-  Eigen::Vector3d center(0.06, -0.5, 0.365);
-  buildCircleBy3Pt(pt1, pt2, pt3, center, points);
-
-  for (unsigned int i = 0; i < 280; ++i)
-  {
-    Eigen::Affine3d pose = descartes_core::utils::toFrame(  0.06f + 0.001 * i, //x
-                                                           -0.5f,              //y
-                                                            0.375f,            //z
-                                                            0,                 //rx
-                                                            M_PI,              //ry
-                                                            0);                //rz
-    descartes_core::TrajectoryPtPtr pt = makeTolerancedCartesianPoint(pose);
-    points.push_back(pt);
-  }
-
-  pt1 << 0.340, -0.5, 0.375;
-  pt2 << 0.348, -0.5, 0.371;
-  pt3 << 0.350, -0.5, 0.365;
-  center << 0.340, -0.5, 0.365;
-  buildCircleBy3Pt(pt1, pt2, pt3, center, points);
-
-  for (unsigned int i = 0; i < 15; ++i)
-  {
-    Eigen::Affine3d pose = descartes_core::utils::toFrame(  pt3(0),             //x
-                                                            pt3(1),             //y
-                                                            pt3(2) - 0.001 * i, //z
-                                                            0,                 //rx
-                                                            M_PI,              //ry
-                                                            0);                 //rz
-    descartes_core::TrajectoryPtPtr pt = makeTolerancedCartesianPoint(pose);
-    points.push_back(pt);
-  }
-
-
-
   // 2. Create a robot model and initialize it
   descartes_core::RobotModelPtr model (new descartes_moveit::MoveitStateAdapter);
 
@@ -603,42 +571,89 @@ int main(int argc, char** argv)
 
   // 3. Create a planner and initialize it with our robot model
   descartes_planner::DensePlanner planner;
+//  descartes_planner::SparsePlanner planner;
+
   planner.initialize(model);
-
-  // 4. Feed the trajectory to the planner
-  if (!planner.planPath(points))
-  {
-    ROS_ERROR("Could not solve for a valid path");
-    return -2;
-  }
-
-  DescartesTrajectory result;
-  if (!planner.getPath(result))
-  {
-    ROS_ERROR("Could not retrieve path");
-    return -3;
-  }
 
   // 5. Translate the result into a type that ROS understands
   // Get Joint Names
-  std::vector<std::string> names;
-  nh.getParam("controller_joint_names", names);
+  std::vector<std::string> joint_names;
+  nh.getParam("controller_joint_names", joint_names);
 
-#if 1
-  // Generate a ROS joint trajectory with the result path, robot model, given joint names,
-  // a certain time delta between each trajectory point
-  trajectory_msgs::JointTrajectory joint_solution = toROSJointTrajectory(result, *model, names, 0); // the last param: time_delay for each point
-//  trajectory_msgs::JointTrajectory joint_solution = toROSJointTrajectory(result, *model, names, 0.1); // the last param: time_delay for each point
+  // 1. Define sequence of points
+  DescartesTrajectory points;
 
-  // 6. Send the ROS trajectory to the robot for execution
-  if (!executeTrajectory(joint_solution))
+  //  // for testing IK: move a verticle path
+  //  for (unsigned int i = 0; i < 15; ++i)
+  //  {
+  //      Eigen::Affine3d pose = descartes_core::utils::toFrame(
+  //              0.5f,              //x
+  //              0.0f,              //y
+  //              0.5f + 0.001 * i,  //z
+  //              0,                 //rx
+  //              M_PI,           //ry
+  //              0);                //rz
+  //      descartes_core::TrajectoryPtPtr pt = makeTolerancedCartesianPoint(pose);
+  //      points.push_back(pt);
+  //  }
+
+  points.clear();
+  for (unsigned int i = 0; i < 15; ++i)
   {
-    ROS_ERROR("Could not execute trajectory!");
-    return -4;
+    Eigen::Affine3d pose = descartes_core::utils::toFrame(  0.05f,              //x
+                                                            -0.5f,               //y
+                                                            0.35f + 0.001 * i,  //z
+                                                            0,                 //rx
+                                                            M_PI,              //ry
+                                                            0);                 //rz
+    descartes_core::TrajectoryPtPtr pt = makeTolerancedCartesianPoint(pose);
+    points.push_back(pt);
   }
-#else
-  runPath(result, model);
-#endif
+  plan_and_run(model, joint_names, planner, points);
+
+  points.clear();
+  Eigen::Vector3d pt1(0.05, -0.5, 0.365);
+  Eigen::Vector3d pt2(0.052, -0.5, 0.371);
+  Eigen::Vector3d pt3(0.06, -0.5, 0.375);
+  Eigen::Vector3d center(0.06, -0.5, 0.365);
+  buildCircleBy3Pt(pt1, pt2, pt3, center, points);
+  plan_and_run(model, joint_names, planner, points);
+
+  points.clear();
+  for (unsigned int i = 0; i < 280; ++i)
+  {
+    Eigen::Affine3d pose = descartes_core::utils::toFrame(  0.06f + 0.001 * i, //x
+                                                            -0.5f,              //y
+                                                            0.375f,            //z
+                                                            0,                 //rx
+                                                            M_PI,              //ry
+                                                            0);                //rz
+    descartes_core::TrajectoryPtPtr pt = makeTolerancedCartesianPoint(pose);
+    points.push_back(pt);
+  }
+  plan_and_run(model, joint_names, planner, points);
+
+  points.clear();
+  pt1 << 0.340, -0.5, 0.375;
+  pt2 << 0.348, -0.5, 0.371;
+  pt3 << 0.350, -0.5, 0.365;
+  center << 0.340, -0.5, 0.365;
+  buildCircleBy3Pt(pt1, pt2, pt3, center, points);
+  plan_and_run(model, joint_names, planner, points);
+
+  points.clear();
+  for (unsigned int i = 0; i < 15; ++i)
+  {
+    Eigen::Affine3d pose = descartes_core::utils::toFrame(  pt3(0),             //x
+                                                            pt3(1),             //y
+                                                            pt3(2) - 0.001 * i, //z
+                                                            0,                 //rx
+                                                            M_PI,              //ry
+                                                            0);                 //rz
+    descartes_core::TrajectoryPtPtr pt = makeTolerancedCartesianPoint(pose);
+    points.push_back(pt);
+  }
+  plan_and_run(model, joint_names, planner, points);
 
   ROS_INFO("Done!");
   // exiting ros node
