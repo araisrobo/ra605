@@ -273,7 +273,8 @@ void buildCircleBy3Pt(
         const Eigen::Vector3d& p2_i,
         const Eigen::Vector3d& p3_i,
         const Eigen::Vector3d& center_i,
-        DescartesTrajectory& points)
+        DescartesTrajectory& points,
+        double resolution)
 {
     /*  Get the normal vector to the triangle formed by 3 points
         Calc a rotation quaternion from that normal to the 0,0,1 axis
@@ -378,10 +379,10 @@ void buildCircleBy3Pt(
     ROS_INFO_STREAM("rTan"<<": ["<<rTan(0)<<", "<<rTan(1)<<"] ");
     ROS_INFO_STREAM("rEnd"<<": ["<<rEnd(0)<<", "<<rEnd(1)<<"] ");
 
-    const double arc_coef = 0.001 / arc_length;
+    const double arc_coef = resolution / arc_length;
     double cur_angle;
     int i;
-    for (i=0; i < (arc_length * 1000); i++) {
+    for (i=0; i < (arc_length / resolution); i++) {
         cur_angle = angle * i * arc_coef;
         Eigen::Rotation2Dd r(cur_angle);
         Eigen::Vector2d rTan2d(rTan(0), rTan(1));
@@ -527,13 +528,13 @@ int main(int argc, char** argv)
 
   // generating trajectory using a line function.
   EigenSTL::vector_Affine3d poses;
-  Eigen::Affine3d begin_pose = descartes_core::utils::toFrame(
-                                                          0.05f,             //x
-                                                         -0.5f,              //y
-                                                          0.35f,             //z
-                                                          0,                 //rx
-                                                          M_PI,              //ry
-                                                          0);                //rz
+//  Eigen::Affine3d begin_pose = descartes_core::utils::toFrame(
+//                                                          0.05f,             //x
+//                                                         -0.5f,              //y
+//                                                          0.35f,             //z
+//                                                          0,                 //rx
+//                                                          M_PI,              //ry
+//                                                          0);                //rz
 //  if(createLine(config_.delta_dist, begin, end, poses))
 //  {
 //    ROS_INFO_STREAM("Trajectory with "<<poses.size()<<" points was generated");
@@ -596,52 +597,54 @@ int main(int argc, char** argv)
   //      descartes_core::TrajectoryPtPtr pt = makeTolerancedCartesianPoint(pose);
   //      points.push_back(pt);
   //  }
-
+  double x_base = 0.35; // was 0.05
+  double y_base = 0.15;  // was 0.5
+  double z_base = 0.123; // was 0.35
   points.clear();
   for (unsigned int i = 0; i < 15; ++i)
   {
-    Eigen::Affine3d pose = descartes_core::utils::toFrame(  0.05f,              //x
-                                                            -0.5f,               //y
-                                                            0.35f + 0.001 * i,  //z
+    Eigen::Affine3d pose = descartes_core::utils::toFrame(  x_base,              //x
+                                                            y_base,               //y
+                                                            z_base + 0.001 * i,  //z
                                                             0,                 //rx
                                                             M_PI,              //ry
                                                             0);                 //rz
     descartes_core::TrajectoryPtPtr pt = makeTolerancedCartesianPoint(pose);
     points.push_back(pt);
   }
-  plan_and_run(model, joint_names, planner, points);
-
-  points.clear();
-  Eigen::Vector3d pt1(0.05, -0.5, 0.365);
-  Eigen::Vector3d pt2(0.052, -0.5, 0.371);
-  Eigen::Vector3d pt3(0.06, -0.5, 0.375);
-  Eigen::Vector3d center(0.06, -0.5, 0.365);
-  buildCircleBy3Pt(pt1, pt2, pt3, center, points);
-  plan_and_run(model, joint_names, planner, points);
-
-  points.clear();
+//  plan_and_run(model, joint_names, planner, points);
+//
+//  points.clear();
+  Eigen::Vector3d center(x_base, y_base + 0.01, z_base + 0.015);
+  Eigen::Vector3d pt1(x_base, y_base, z_base + 0.015);
+  Eigen::Vector3d pt2(x_base, y_base + 0.002, z_base + 0.015 + 0.006);
+  Eigen::Vector3d pt3(x_base, y_base + 0.01, z_base + 0.025);
+  buildCircleBy3Pt(pt1, pt2, pt3, center, points, 0.001);
+//  plan_and_run(model, joint_names, planner, points);
+//
+//  points.clear();
   for (unsigned int i = 0; i < 280; ++i)
   {
-    Eigen::Affine3d pose = descartes_core::utils::toFrame(  0.06f + 0.001 * i, //x
-                                                            -0.5f,              //y
-                                                            0.375f,            //z
-                                                            0,                 //rx
-                                                            M_PI,              //ry
-                                                            0);                //rz
+    Eigen::Affine3d pose = descartes_core::utils::toFrame(  pt3(0),             //x
+                                                            pt3(1) + 0.001 * i, //y
+                                                            pt3(2),             //z
+                                                            0,                  //rx
+                                                            M_PI,               //ry
+                                                            0);                 //rz
     descartes_core::TrajectoryPtPtr pt = makeTolerancedCartesianPoint(pose);
     points.push_back(pt);
   }
-  plan_and_run(model, joint_names, planner, points);
-
-  points.clear();
-  pt1 << 0.340, -0.5, 0.375;
-  pt2 << 0.348, -0.5, 0.371;
-  pt3 << 0.350, -0.5, 0.365;
-  center << 0.340, -0.5, 0.365;
-  buildCircleBy3Pt(pt1, pt2, pt3, center, points);
-  plan_and_run(model, joint_names, planner, points);
-
-  points.clear();
+//  plan_and_run(model, joint_names, planner, points);
+//
+//  points.clear();
+  center << pt3(0), pt3(1) + 0.28,         z_base + 0.015;
+  pt1 <<    pt3(0), pt3(1) + 0.28,         z_base + 0.025;
+  pt2 <<    pt3(0), pt3(1) + 0.28 + 0.008, z_base + 0.015 + 0.006;
+  pt3 <<    pt3(0), pt3(1) + 0.28 + 0.010, z_base + 0.015;
+  buildCircleBy3Pt(pt1, pt2, pt3, center, points, 0.001);
+////  plan_and_run(model, joint_names, planner, points);
+////
+////  points.clear();
   for (unsigned int i = 0; i < 15; ++i)
   {
     Eigen::Affine3d pose = descartes_core::utils::toFrame(  pt3(0),             //x
@@ -653,6 +656,55 @@ int main(int argc, char** argv)
     descartes_core::TrajectoryPtPtr pt = makeTolerancedCartesianPoint(pose);
     points.push_back(pt);
   }
+  plan_and_run(model, joint_names, planner, points);
+
+  points.clear();
+  // move left
+  for (unsigned int i = 0; i < 150; ++i)
+  {
+    Eigen::Affine3d pose = descartes_core::utils::toFrame(  pt3(0),             //x
+                                                            pt3(1) - 0.001 * i, //y
+                                                            z_base,             //z
+                                                            0,                 //rx
+                                                            M_PI,              //ry
+                                                            0);                 //rz
+    descartes_core::TrajectoryPtPtr pt = makeTolerancedCartesianPoint(pose);
+    points.push_back(pt);
+  }
+
+  // move up
+  for (unsigned int i = 0; i < 50; ++i)
+  {
+    Eigen::Affine3d pose = descartes_core::utils::toFrame(  pt3(0) - 0.001 * i, //x
+                                                            pt3(1) - 0.15,      //y
+                                                            z_base,             //z
+                                                            0,                 //rx
+                                                            M_PI,              //ry
+                                                            0);                 //rz
+    descartes_core::TrajectoryPtPtr pt = makeTolerancedCartesianPoint(pose);
+    points.push_back(pt);
+  }
+
+  // arc w/ r=100
+  center << pt3(0),       pt3(1) - 0.15,        z_base;
+  pt1 <<    pt3(0)- 0.05, pt3(1) - 0.15,        z_base;
+  pt2 <<    pt3(0)- 0.04, pt3(1) - 0.15 + 0.03, z_base;
+  pt3 <<    pt3(0),       pt3(1) - 0.15 + 0.05, z_base;
+  buildCircleBy3Pt(pt1, pt2, pt3, center, points, 0.001);
+
+//  // lift up
+//  for (unsigned int i = 0; i < 25; ++i)
+//  {
+//    Eigen::Affine3d pose = descartes_core::utils::toFrame(  pt3(0),             //x
+//                                                            pt3(1),             //y
+//                                                            z_base + 0.001 * i, //z
+//                                                            0,                  //rx
+//                                                            M_PI,               //ry
+//                                                            0);                 //rz
+//    descartes_core::TrajectoryPtPtr pt = makeTolerancedCartesianPoint(pose);
+//    points.push_back(pt);
+//  }
+
   plan_and_run(model, joint_names, planner, points);
 
   ROS_INFO("Done!");
@@ -674,7 +726,7 @@ descartes_core::TrajectoryPtPtr makeTolerancedCartesianPoint(const Eigen::Affine
 {
   using namespace descartes_core;
   using namespace descartes_trajectory;
-  return TrajectoryPtPtr( new AxialSymmetricPt(pose, M_PI/2.0-0.0001, AxialSymmetricPt::Z_AXIS) );
+  return TrajectoryPtPtr( new AxialSymmetricPt(pose, M_PI/4.0, AxialSymmetricPt::Z_AXIS) );
 }
 
 trajectory_msgs::JointTrajectory
