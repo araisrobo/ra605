@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3)
+
 project(ra605_descartes)
 
-find_package(catkin REQUIRED
+find_package(
+  catkin REQUIRED
   descartes_core
   descartes_moveit
   descartes_trajectory
@@ -43,6 +45,28 @@ include_directories(include
 
 add_executable(${PROJECT_NAME}_tutorial1 src/tutorial1.cpp)
 target_link_libraries(${PROJECT_NAME}_tutorial1 ${catkin_LIBRARIES})
+
+add_executable(${PROJECT_NAME}_line src/line.cpp)
+target_link_libraries(${PROJECT_NAME}_line ${catkin_LIBRARIES})
+
+#############
+## Testing ##
+#############
+if(CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+  find_package(GTest REQUIRED)
+  include_directories(${GTEST_INCLUDE_DIRS})
+  
+  set(UTEST_SRC_FILES test/utest.cpp)
+
+  add_rostest_gtest(${PROJECT_NAME}_utest test/launch/utest.launch ${UTEST_SRC_FILES})
+  target_link_libraries(${PROJECT_NAME}_utest ${catkin_LIBRARIES} ${GTEST_LIBRARIES})
+endif()
+
+#############
+## Install ##
+#############
+
 install(TARGETS ${PROJECT_NAME}_tutorial1
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
@@ -53,8 +77,6 @@ set_target_properties(${PROJECT_NAME}_tutorial1
   PREFIX ""
 )
 
-add_executable(${PROJECT_NAME}_line src/line.cpp)
-target_link_libraries(${PROJECT_NAME}_line ${catkin_LIBRARIES})
 install(TARGETS ${PROJECT_NAME}_line
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
@@ -64,25 +86,7 @@ set_target_properties(${PROJECT_NAME}_line
   PROPERTIES OUTPUT_NAME line
   PREFIX ""
 )
-
-# TODO:
-# add_library(${PROJECT_NAME}
-#   src/ra605_robot_model.cpp
-#   src/plugin_init.cpp
-# )
-# target_link_libraries(${PROJECT_NAME}
-#   ${catkin_LIBRARIES} ${Eigen_LIBRARIES} ${Boost_LIBRARIES} ${LAPACK_LIBRARIES})
-
-#############
-## Install ##
-#############
-
-# install(TARGETS ${PROJECT_NAME}_tutorial1
-#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
-
+  
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h"
