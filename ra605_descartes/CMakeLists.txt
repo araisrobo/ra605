@@ -43,11 +43,19 @@ include_directories(include
   ${Eigen_INCLUDE_DIRS}
 )
 
+
+## Descartes MoveIt lib
+add_library(path_gen src/path_gen.cpp )
+target_link_libraries(path_gen ${catkin_LIBRARIES})
+
 add_executable(${PROJECT_NAME}_tutorial1 src/tutorial1.cpp)
 target_link_libraries(${PROJECT_NAME}_tutorial1 ${catkin_LIBRARIES})
 
 add_executable(${PROJECT_NAME}_line src/line.cpp)
 target_link_libraries(${PROJECT_NAME}_line ${catkin_LIBRARIES})
+
+add_executable(${PROJECT_NAME}_cycleTime src/cycleTime.cpp)
+target_link_libraries(${PROJECT_NAME}_cycleTime path_gen ${catkin_LIBRARIES})
 
 #############
 ## Testing ##
@@ -60,7 +68,7 @@ if(CATKIN_ENABLE_TESTING)
   set(UTEST_SRC_FILES test/utest.cpp)
 
   add_rostest_gtest(${PROJECT_NAME}_utest test/launch/utest.launch ${UTEST_SRC_FILES})
-  target_link_libraries(${PROJECT_NAME}_utest ${catkin_LIBRARIES} ${GTEST_LIBRARIES})
+  target_link_libraries(${PROJECT_NAME}_utest path_gen ${catkin_LIBRARIES} ${GTEST_LIBRARIES})
 endif()
 
 #############
